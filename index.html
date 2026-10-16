@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2f5d50">
+<title>科研适配度测评 · 25题看清你该不该读博</title>
+<style>
+  :root{
+    --paper:#f6f4f0;
+    --card:#ffffff;
+    --ink:#1c1c1a;
+    --sub:#6b6862;
+    --line:#e6e2db;
+    --accent:#2f5d50;
+    --accent-2:#3d7566;
+    --soft:#eaf0ed;
+    --warn:#b5523b;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    font-size:16px;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+    padding:0 0 env(safe-area-inset-bottom);
+  }
+  .app{max-width:560px;margin:0 auto;padding:0 20px 64px;}
+
+  /* ---------- 顶栏 ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:rgba(246,244,240,.92);
+    backdrop-filter:saturate(180%) blur(12px);
+    padding:14px 0 10px;
+  }
+  .topbar.hidden{display:none;}
+  .bar-meta{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:13px;color:var(--sub);margin-bottom:8px;letter-spacing:.02em;
+  }
+  .bar-meta strong{color:var(--accent);font-weight:600;}
+  .track{height:6px;border-radius:999px;background:#e7e3dc;overflow:hidden;}
+  .fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .35s cubic-bezier(.4,0,.2,1);}
+
+  /* ---------- 屏 ---------- */
+  .screen{display:none;animation:fade .4s ease both;}
+  .screen.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+  /* ---------- 封面 ---------- */
+  .cover{padding:52px 0 0;text-align:center;}
+  .kicker{
+    display:inline-block;font-size:12px;letter-spacing:.18em;
+    color:var(--accent);background:var(--soft);
+    padding:6px 14px;border-radius:999px;margin-bottom:22px;
+  }
+  h1{
+    font-size:30px;line-height:1.4;font-weight:700;
+    margin:0 0 12px;letter-spacing:-.01em;
+  }
+  .cover-sub{color:var(--sub);font-size:15px;margin:0 0 32px;}
+  .cover-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 20px;text-align:left;margin-bottom:18px;
+  }
+  .cover-card h2{
+    font-size:15px;margin:0 0 12px;color:var(--accent);font-weight:600;
+  }
+  .cover-card ol{margin:0;padding-left:20px;color:#3a3833;font-size:14.5px;}
+  .cover-card li{margin-bottom:7px;}
+  .cover-card li::marker{color:var(--accent-2);}
+  .legend{
+    background:var(--soft);border-radius:12px;padding:14px 16px;
+    font-size:13.5px;color:#40564f;margin-bottom:30px;text-align:left;
+  }
+  .legend b{color:var(--accent);}
+
+  /* ---------- 按钮 ---------- */
+  .btn{
+    display:block;width:100%;border:0;border-radius:14px;
+    padding:17px 20px;font-size:17px;font-weight:600;
+    font-family:inherit;cursor:pointer;
+    background:var(--accent);color:#fff;
+    transition:transform .15s ease,opacity .2s ease,background .2s ease;
+  }
+  .btn:active{transform:scale(.985);}
+  .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--line);}
+  .btn[disabled]{opacity:.35;pointer-events:none;}
+  .btn-row{display:flex;gap:12px;margin-top:8px;}
+  .btn-row .btn{flex:1;}
+
+  /* ---------- 答题 ---------- */
+  .page-head{padding:6px 0 18px;}
+  .page-head .dim{
+    font-size:12px;letter-spacing:.16em;color:var(--accent);
+    text-transform:uppercase;margin-bottom:6px;
+  }
+  .page-head .hint{font-size:14px;color:var(--sub);}
+  .q-item{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 18px 16px;margin-bottom:14px;
+  }
+  .q-text{font-size:16px;line-height:1.65;margin-bottom:14px;display:flex;gap:10px;}
+  .q-no{
+    flex:0 0 auto;width:24px;height:24px;border-radius:8px;
+    background:var(--soft);color:var(--accent);
+    font-size:12.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    margin-top:3px;
+  }
+  .scale{display:flex;gap:8px;}
+  .scale-btn{
+    flex:1;border:1.5px solid var(--line);background:#fbfaf8;
+    border-radius:11px;padding:14px 0;
+    font-size:16px;font-weight:600;color:var(--sub);
+    font-family:inherit;cursor:pointer;
+    transition:all .18s ease;
+  }
+  .scale-btn:active{transform:scale(.94);}
+  .scale-btn.sel{
+    background:var(--accent);border-color:var(--accent);color:#fff;
+    box-shadow:0 3px 10px rgba(47,93,80,.24);
+  }
+  .anchors{
+    display:flex;justify-content:space-between;
+    font-size:11.5px;color:#9a958c;margin-top:9px;padding:0 2px;
+  }
+
+  /* ---------- 结果 ---------- */
+  .result{padding:20px 0 0;}
+  .type-card{
+    background:linear-gradient(155deg,#2f5d50,#22473d);
+    color:#fff;border-radius:20px;padding:28px 22px;
+    margin-bottom:18px;position:relative;overflow:hidden;
+  }
+  .type-card::after{
+    content:"";position:absolute;right:-40px;top:-40px;
+    width:150px;height:150px;border-radius:50%;
+    background:rgba(255,255,255,.07);
+  }
+  .type-label{font-size:12px;letter-spacing:.2em;opacity:.72;margin-bottom:10px;}
+  .type-name{font-size:32px;font-weight:700;line-height:1.25;margin-bottom:6px;letter-spacing:-.01em;}
+  .type-alias{font-size:14px;opacity:.78;margin-bottom:16px;}
+  .type-quote{
+    font-size:15px;line-height:1.7;opacity:.94;
+    border-top:1px solid rgba(255,255,255,.18);padding-top:15px;
+  }
+  .type-total{
+    display:inline-block;margin-top:16px;font-size:12.5px;
+    background:rgba(255,255,255,.14);padding:5px 12px;border-radius:999px;
+  }
+  .panel{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 18px;margin-bottom:14px;
+  }
+  .panel h3{
+    font-size:13px;letter-spacing:.1em;color:var(--accent);
+    margin:0 0 14px;font-weight:600;
+  }
+  .panel p{margin:0;font-size:15px;line-height:1.72;color:#33312d;}
+  .panel p + p{margin-top:10px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    font-size:13.5px;background:var(--soft);color:#35564c;
+    padding:7px 13px;border-radius:999px;
+  }
+  .risk{color:var(--warn);}
+  .warn-box{
+    background:#fdf3ef;border:1px solid #f2ded6;border-radius:12px;
+    padding:15px 16px;font-size:14px;color:#8d3f2b;margin-bottom:14px;line-height:1.7;
+  }
+
+  /* ---------- 维度条 ---------- */
+  .dim-row{margin-bottom:15px;}
+  .dim-row:last-child{margin-bottom:0;}
+  .dim-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;}
+  .dim-name{font-size:14.5px;font-weight:600;}
+  .dim-score{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums;}
+  .dim-score b{color:var(--accent);font-size:15px;}
+  .dim-track{height:8px;background:#eeebe5;border-radius:999px;overflow:hidden;}
+  .dim-fill{height:100%;width:0;border-radius:999px;transition:width .8s cubic-bezier(.2,.8,.2,1);}
+  .dim-note{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.6;}
+
+  .foot{
+    text-align:center;font-size:12px;color:#9a958c;
+    line-height:1.75;margin-top:28px;padding:0 6px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 顶栏 ============ -->
+  <div class="topbar hidden" id="topbar">
+    <div class="bar-meta">
+      <span id="bar-label">第 1 / 5 组</span>
+      <span><strong id="bar-count">0</strong> / 25 题</span>
+    </div>
+    <div class="track"><div class="fill" id="bar-fill"></div></div>
+  </div>
+
+  <!-- ============ 封面 ============ -->
+  <section class="screen active" id="screen-cover">
+    <div class="cover">
+      <span class="kicker">RESEARCH FIT TEST</span>
+      <h1>25道题<br>看清你该不该读博</h1>
+      <p class="cover-sub">从身体、心理、学术底盘、环境四个层面，算出你的科研适配类型</p>
+
+      <div class="cover-card">
+        <h2>这份测评在测什么</h2>
+        <ol>
+          <li>科研的反馈周期以年计，你能不能扛住长期没有回音</li>
+          <li>失败是常态，你会不会在第一百九十次之后自崩</li>
+          <li>没人派活，没有人看见，你还愿不愿意做</li>
+          <li>你的身体底盘和身后缓冲垫够不够厚</li>
+        </ol>
+      </div>
+
+      <div class="legend">
+        每题按 <b>1 到 5</b> 打分：1＝完全不符合，5＝完全符合。凭第一反应作答，不要反复权衡。
+      </div>
+
+      <button class="btn" id="btn-start">开始测评</button>
+    </div>
+  </section>
+
+  <!-- ============ 答题 ============ -->
+  <section class="screen" id="screen-quiz">
+    <div class="page-head">
+      <div class="dim" id="page-dim">A 身体能量</div>
+      <div class="hint" id="page-hint"></div>
+    </div>
+    <div id="quiz-body"></div>
+    <div class="btn-row">
+      <button class="btn ghost" id="btn-prev">上一组</button>
+      <button class="btn" id="btn-next" disabled>下一组</button>
+    </div>
+  </section>
+
+  <!-- ============ 结果 ============ -->
+  <section class="screen" id="screen-result">
+    <div class="result">
+      <div id="result-type"></div>
+      <div id="result-warn"></div>
+      <div class="panel">
+        <h3>五维得分</h3>
+        <div id="result-dims"></div>
+      </div>
+      <div id="result-detail"></div>
+      <div class="btn-row" style="margin-top:6px;">
+        <button class="btn ghost" id="btn-again">重新测试</button>
+        <button class="btn" id="btn-copy">复制结果</button>
+      </div>
+      <div class="foot">
+        本测评参考职业心理学与人格心理学的研究框架设计，用途是生涯规划参考，不做医学或心理诊断。<br>
+        如果你近期持续情绪低落、失眠、日常生活受到明显影响，请找专业的心理咨询师或精神科医生。
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- 数据 ---------------- */
+  var QUESTIONS = [
+    {id:1,  dim:"A", text:"连续三天睡不满六小时，我还能维持基本的思考效率。"},
+    {id:2,  dim:"A", text:"我能坐着做同一件事四个小时以上，不需要频繁起身。"},
+    {id:3,  dim:"A", text:"熬一次夜之后，我一两天就能恢复正常状态。"},
+    {id:4,  dim:"A", reverse:true, text:"颈椎、肠胃或者头痛这类身体不适，经常干扰我的工作。"},
+    {id:5,  dim:"A", text:"连续几天很少和人说话，我的状态不会明显变差。"},
+
+    {id:6,  dim:"B", text:"一件事做了三个月毫无进展，我依然能按原计划往下走。"},
+    {id:7,  dim:"B", text:"结果不确定的时候，我照样睡得着。"},
+    {id:8,  dim:"B", reverse:true, text:"我需要频繁看到阶段性成果，才能确认自己在往前走。"},
+    {id:9,  dim:"B", reverse:true, text:"长时间得不到别人的认可，我会开始怀疑自己做的事没有意义。"},
+    {id:10, dim:"B", text:"有人否定我的想法，我能继续往下做，不急着换方向。"},
+
+    {id:11, dim:"C", text:"没有人知道我在做什么，我也愿意继续做。"},
+    {id:12, dim:"C", text:"我读文献的时候，会因为好奇忘了时间。"},
+    {id:13, dim:"C", reverse:true, text:"我读研的主要理由是学位、户口、父母期望或者就业门槛。"},
+    {id:14, dim:"C", text:"我经常主动去想一个别人没让我想的问题。"},
+    {id:15, dim:"C", text:"一份薪水很高但重复性很强的工作，我会觉得难以忍受。"},
+
+    {id:16, dim:"D", text:"遇到复杂问题，我习惯先把它拆成几个能分别处理的部分。"},
+    {id:17, dim:"D", text:"遇到不懂的概念，我能自己找到路径把它弄明白。"},
+    {id:18, dim:"D", text:"我能把自己的推理过程写清楚，而不只是给一个结论。"},
+    {id:19, dim:"D", text:"面对一堆材料，我能较快判断哪些是核心，哪些可以放过。"},
+    {id:20, dim:"D", text:"我读文献时会去质疑它的方法，而不只是记下它的结论。"},
+
+    {id:21, dim:"E", text:"我的家人理解并且支持我继续读书。"},
+    {id:22, dim:"E", text:"我的导师能给我有效的指导。"},
+    {id:23, dim:"E", text:"我身边有能一起讨论问题的同学或者朋友。"},
+    {id:24, dim:"E", text:"读研期间我的经济来源稳定，不需要长期打零工补贴生活。"},
+    {id:25, dim:"E", text:"我有一个能随时说话、能接住我情绪的人。"}
+  ];
+
+  var PAGES = [
+    {dim:"A 身体能量与恢复力", hint:"先看底盘。长周期的消耗最后都落在身体上。"},
+    {dim:"B 不确定性耐受",     hint:"这一项是科研的分水岭，它比聪明更关键。"},
+    {dim:"C 内在驱动",         hint:"没有人看见的时候，你还愿不愿意做。"},
+    {dim:"D 认知特质",         hint:"你处理复杂问题的方式对不对路。"},
+    {dim:"E 环境支持",         hint:"身后有没有人接着你，这一点最容易被忽略。"}
+  ];
+
+  var DIM_INFO = {
+    A:{name:"身体能量与恢复力",
+       low:"生理底盘偏弱，优先调作息和运动。",
+       mid:"够用，熬夜和连轴转会快速透支。",
+       high:"耐久度好，这是稀缺的科研资产。"},
+    B:{name:"不确定性耐受",
+       low:"长期没有回馈会让你自崩。",
+       mid:"能撑一段，需要阶段性成果续命。",
+       high:"能在长期模糊中稳定输出。"},
+    C:{name:"内在驱动",
+       low:"驱动来自外部，读博会非常痛苦。",
+       mid:"有兴趣，遇到挫折时需要外部推一把。",
+       high:"没人看也愿意做，这是走远路的底牌。"},
+    D:{name:"认知特质",
+       low:"需要刻意训练拆解和表达能力。",
+       mid:"基本对路，写作和质疑能力还能再练。",
+       high:"抽象、拆解、质疑都在线，学得快。"},
+    E:{name:"环境支持",
+       low:"缓冲垫很薄，读博风险显著上升。",
+       mid:"能维持，但遇到大事容易撑不住。",
+       high:"身后有人接着，这是被低估的优势。"}
+  };
+
+  var TYPES = {
+    1:{no:1, name:"长跑型", alias:"原生科研型",
+       quote:"身体底子可以，情绪稳定，好奇心强，问题拆得清。",
+       fit:"适合读博，适合学术路线和深度研发路线。",
+       jobs:["高校教职","科研院所","企业研究院","基础研究岗","新药研发"],
+       risk:"你的耐受度高，容易一直硬撑。撑到身体出问题的时候，你还在撑。",
+       fix:"给自己定一个年度体检，定一个固定的社交时间，把这两件事写进日程。"},
+    2:{no:2, name:"稳扎型", alias:"工程落地型",
+       quote:"认知清楚，驱动够，对长期混乱的环境不耐受。",
+       fit:"能读研。读博要挑导师和课题，优先选有明确节点的方向。",
+       jobs:["大厂研发","技术产品","数据工程","芯片设计","医疗器械","专利代理"],
+       risk:"进了纯学术环境会因为看不到进展而自我怀疑，误判成自己能力不行。",
+       fix:"把课题切成有里程碑的小段，或者直接去工程侧。"},
+    3:{no:3, name:"冲刺型", alias:"短反馈高执行型",
+       quote:"能量足，执行力强，需要有人给方向和节点。",
+       fit:"适合去工业界。纯学术路线会让你长期憋着。",
+       jobs:["产品经理","项目经理","管理咨询","新媒体运营","创业"],
+       risk:"你会以为是自己不够好，其实是环境不匹配。",
+       fix:"找有明确目标和快速迭代节奏的岗位，越早越好。"},
+    4:{no:4, name:"深潜型", alias:"敏感洞察型",
+       quote:"洞察力和抽象能力强，情绪敏感，生理能量偏低，容易耗。",
+       fit:"读研可以。读博要谨慎，方向要选对。",
+       jobs:["数据分析","计算与理论方向","行业研究","编辑写作","用户研究"],
+       risk:"在需要长期体力输出的实验环境里，你的损耗远超别人，而且别人看不出来。",
+       fix:"优先选计算类、文献类、桌面研究类课题，把体力消耗压到最低。"},
+    5:{no:5, name:"探索型", alias:"暂不适配型",
+       quote:"驱动主要来自外部，还没找到愿意长期投入的问题。",
+       fit:"先工作，或者先去做一两个具体项目，暂不读博。",
+       jobs:["用一到两年试几件不同的事","把答案试出来再决定方向"],
+       risk:"带着外部驱动读博，整个过程会非常痛苦，而且很难停下来。",
+       fix:"给自己定一个明确的试错期限，在期限里认真试，试完再做决定。"}
+  };
+
+  var TOTAL_BANDS = [
+    {min:105, text:"整体适配度很高，科研这条路对你来说是顺的。"},
+    {min:85,  text:"整体适配度中上，方向选对就能走得远。"},
+    {min:65,  text:"整体适配度中等，适合有明确节点的环境。"},
+    {min:45,  text:"整体适配度偏低，建议先用项目试错再决定。"},
+    {min:0,   text:"整体适配度低，先把驱动问题解决，再谈读博。"}
+  ];
+
+  /* ---------------- 状态 ---------------- */
+  var answers = {};
+  var page = 0;
+
+  var els = {
+    topbar:   document.getElementById("topbar"),
+    barLabel: document.getElementById("bar-label"),
+    barCount: document.getElementById("bar-count"),
+    barFill:  document.getElementById("bar-fill"),
+    cover:    document.getElementById("screen-cover"),
+    quiz:     document.getElementById("screen-quiz"),
+    result:   document.getElementById("screen-result"),
+    pageDim:  document.getElementById("page-dim"),
+    pageHint: document.getElementById("page-hint"),
+    body:     document.getElementById("quiz-body"),
+    prev:     document.getElementById("btn-prev"),
+    next:     document.getElementById("btn-next")
+  };
+
+  function show(screen){
+    [els.cover, els.quiz, els.result].forEach(function(s){ s.classList.remove("active"); });
+    screen.classList.add("active");
+    window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+  }
+
+  /* ---------------- 答题 ---------------- */
+  function answeredCount(){
+    return Object.keys(answers).length;
+  }
+
+  function renderQuiz(){
+    var start = page * 5;
+    els.pageDim.textContent = PAGES[page].dim;
+    els.pageHint.textContent = PAGES[page].hint;
+
+    var html = "";
+    for (var i = start; i < start + 5; i++){
+      var q = QUESTIONS[i];
+      html += '<div class="q-item">';
+      html +=   '<div class="q-text"><span class="q-no">' + q.id + '</span><span>' + q.text + '</span></div>';
+      html +=   '<div class="scale" data-qid="' + q.id + '">';
+      for (var v = 1; v <= 5; v++){
+        html += '<button type="button" class="scale-btn' + (answers[q.id] === v ? " sel" : "") + '" data-v="' + v + '">' + v + '</button>';
+      }
+      html +=   '</div>';
+      html += '</div>';
+    }
+    els.body.innerHTML = html;
+
+    var anchor = '<div class="anchors"><span>1 完全不符合</span><span>5 完全符合</span></div>';
+    els.body.insertAdjacentHTML("beforeend", anchor);
+
+    els.prev.disabled = page === 0;
+    els.next.textContent = page === 4 ? "查看结果" : "下一组";
+    updateBar();
+  }
+
+  function pageReady(){
+    var start = page * 5;
+    for (var i = start; i < start + 5; i++){
+      if (answers[QUESTIONS[i].id] === undefined) return false;
+    }
+    return true;
+  }
+
+  function updateBar(){
+    var done = answeredCount();
+    els.barCount.textContent = done;
+    els.barFill.style.width = (done / 25 * 100) + "%";
+    els.barLabel.textContent = "第 " + (page + 1) + " / 5 组";
+    els.next.disabled = !pageReady();
+  }
+
+  els.body.addEventListener("click", function(e){
+    var btn = e.target.closest(".scale-btn");
+    if (!btn) return;
+    var wrap = btn.parentElement;
+    var qid = Number(wrap.getAttribute("data-qid"));
+    answers[qid] = Number(btn.getAttribute("data-v"));
+
+    var btns = wrap.querySelectorAll(".scale-btn");
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove("sel");
+    btn.classList.add("sel");
+    btn.blur();
+    updateBar();
+  });
+
+  document.getElementById("btn-start").addEventListener("click", function(){
+    page = 0;
+    els.topbar.classList.remove("hidden");
+    show(els.quiz);
+    renderQuiz();
+  });
+
+  els.prev.addEventListener("click", function(){
+    if (page > 0){ page--; renderQuiz(); }
+  });
+
+  els.next.addEventListener("click", function(){
+    if (!pageReady()) return;
+    if (page < 4){
+      page++;
+      renderQuiz();
+      window.scrollTo({top:0, behavior:"smooth"});
+    } else {
+      renderResult();
+    }
+  });
+
+  /* ---------------- 计分 ---------------- */
+  function compute(){
+    var raw = {A:0, B:0, C:0, D:0, E:0};
+    QUESTIONS.forEach(function(q){
+      var v = answers[q.id];
+      if (q.reverse) v = 6 - v;
+      raw[q.dim] += v;
+    });
+    raw.total = raw.A + raw.B + raw.C + raw.D + raw.E;
+    return raw;
+  }
+
+  function decideType(s){
+    if (s.C < 15) return 5;
+    if (s.B < 15) return 3;
+    if (s.A >= 18 && s.D >= 18) return 1;
+    if (s.A <= 14) return 4;
+    return 2;
+  }
+
+  function band(score){
+    if (score <= 11) return "low";
+    if (score <= 18) return "mid";
+    return "high";
+  }
+
+  function bandColor(k){
+    return k === "high" ? "#2f5d50" : (k === "mid" ? "#8a9a7b" : "#b5523b");
+  }
+
+  /* ---------------- 结果 ---------------- */
+  function renderResult(){
+    var s = compute();
+    var type = TYPES[decideType(s)];
+    var totalBand = TOTAL_BANDS.filter(function(b){ return s.total >= b.min; })[0];
+
+    els.topbar.classList.add("hidden");
+
+    // 类型卡
+    var h = '';
+    h += '<div class="type-card">';
+    h +=   '<div class="type-label">你的类型</div>';
+    h +=   '<div class="type-name">' + type.name + '</div>';
+    h +=   '<div class="type-alias">' + type.alias + '</div>';
+    h +=   '<div class="type-quote">' + type.quote + '</div>';
+    h +=   '<span class="type-total">总分 ' + s.total + ' / 125 · ' + totalBand.text + '</span>';
+    h += '</div>';
+    els.innerHTML = h;
+    document.getElementById("result-type").innerHTML = h;
+
+    // 环境预警
+    var warnEl = document.getElementById("result-warn");
+    if (s.E <= 11){
+      warnEl.innerHTML = '<div class="warn-box">你的环境支持分只有 <b>' + s.E + '</b> 分。缓冲垫薄的时候，读博的风险会显著上升。建议先把导师关系、经济来源和情绪出口理顺，再考虑读博这件事。</div>';
+    } else if (s.E <= 18){
+      warnEl.innerHTML = '<div class="warn-box" style="background:#fbf8f2;border-color:#efe6d6;color:#7a6234;">你的环境支持分是 <b>' + s.E + '</b> 分。够用，但遇到大事容易撑不住。提前给自己找一个能接住情绪的人。</div>';
+    } else {
+      warnEl.innerHTML = '';
+    }
+
+    // 五维
+    var dims = ["A", "B", "C", "D", "E"];
+    var rows = "";
+    dims.forEach(function(k){
+      var score = s[k];
+      var b = band(score);
+      rows += '<div class="dim-row">';
+      rows +=   '<div class="dim-top"><span class="dim-name">' + DIM_INFO[k].name + '</span><span class="dim-score"><b>' + score + '</b> / 25</span></div>';
+      rows +=   '<div class="dim-track"><div class="dim-fill" data-w="' + (score / 25 * 100) + '" style="background:' + bandColor(b) + '"></div></div>';
+      rows +=   '<div class="dim-note">' + DIM_INFO[k][b] + '</div>';
+      rows += '</div>';
+    });
+    document.getElementById("result-dims").innerHTML = rows;
+
+    // 详情
+    var chips = "";
+    type.jobs.forEach(function(j){ chips += '<span class="chip">' + j + '</span>'; });
+
+    var d = '';
+    d += '<div class="panel"><h3>适配判断</h3><p>' + type.fit + '</p></div>';
+    d += '<div class="panel"><h3>职业方向</h3><div class="chips">' + chips + '</div></div>';
+    d += '<div class="panel"><h3>最大风险点</h3><p class="risk">' + type.risk + '</p></div>';
+    d += '<div class="panel"><h3>一条对策</h3><p>' + type.fix + '</p></div>';
+    document.getElementById("result-detail").innerHTML = d;
+
+    show(els.result);
+
+    // 动画
+    requestAnimationFrame(function(){
+      var fills = document.querySelectorAll(".dim-fill");
+      setTimeout(function(){
+        for (var i = 0; i < fills.length; i++){
+          fills[i].style.width = fills[i].getAttribute("data-w") + "%";
+        }
+      }, 60);
+    });
+
+    window.__result = {score:s, type:type, totalBand:totalBand};
+  }
+
+  /* ---------------- 复制 ---------------- */
+  document.getElementById("btn-copy").addEventListener("click", function(){
+    var r = window.__result;
+    if (!r) return;
+    var s = r.score, t = r.type;
+
+    var txt = "科研适配度测评结果\n\n";
+    txt += "类型" + t.no + " · " + t.name + "（" + t.alias + "）\n";
+    txt += t.quote + "\n\n";
+    txt += "总分 " + s.total + " / 125\n";
+    txt += "A 身体能量 " + s.A + "/25\n";
+    txt += "B 不确定性耐受 " + s.B + "/25\n";
+    txt += "C 内在驱动 " + s.C + "/25\n";
+    txt += "D 认知特质 " + s.D + "/25\n";
+    txt += "E 环境支持 " + s.E + "/25\n\n";
+    txt += "适配判断：" + t.fit + "\n";
+    txt += "职业方向：" + t.jobs.join("、") + "\n";
+    txt += "风险点：" + t.risk + "\n";
+    txt += "对策：" + t.fix + "\n";
+
+    var btn = this;
+    function done(){
+      btn.textContent = "已复制";
+      setTimeout(function(){ btn.textContent = "复制结果"; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done, function(){ fallback(txt, done); });
+    } else {
+      fallback(txt, done);
+    }
+  });
+
+  function fallback(txt, cb){
+    var ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch(e){}
+    document.body.removeChild(ta);
+    cb();
+  }
+
+  /* ---------------- 重测 ---------------- */
+  document.getElementById("btn-again").addEventListener("click", function(){
+    answers = {};
+    page = 0;
+    els.topbar.classList.remove("hidden");
+    show(els.quiz);
+    renderQuiz();
+  });
+
+})();
+</script>
+</body>
+</html>
